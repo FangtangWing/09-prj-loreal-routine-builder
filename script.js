@@ -12,6 +12,7 @@ let allProducts = [];
 
 let selectedProductContext = [];
 let contextHistory = [];
+const workerApiUrl = "https://chatbot-worker.3248613716.workers.dev";
 
 const routineSystemPromptParam =
   "You are a helpful beauty advisor. Create a clear personalized routine using only the selected products. You only answer questions about input products, routines, and recommendations.";
@@ -72,28 +73,35 @@ function showNoSelectedProductsMessage() {
 }
 
 async function requestRoutine(messages) {
-  if (typeof OPENAI_API_KEY === "undefined") {
-    throw new Error("Missing OPENAI_API_KEY in secret.js");
-  }
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(workerApiUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o",
       messages,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI request failed with status ${response.status}`);
+    throw new Error(`Worker request failed with status ${response.status}`);
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+
+  if (data.choices && data.choices[0] && data.choices[0].message) {
+    return data.choices[0].message.content;
+  }
+
+  if (data.reply) {
+    return data.reply;
+  }
+
+  if (data.content) {
+    return data.content;
+  }
+
+  throw new Error("Unexpected worker response format");
 }
 
 /* Filter and display products when category changes */
