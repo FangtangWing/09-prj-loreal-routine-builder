@@ -9,6 +9,10 @@ const chatWindow = document.getElementById("chatWindow");
 const selectedProducts = [];
 let currentProducts = [];
 let allProducts = [];
+
+let selectedProductContext = [];
+let contextHistory = [];
+
 const routineSystemPromptParam =
   "You are a helpful beauty advisor. Create a clear personalized routine using only the selected products. You only answer questions about input products, routines, and recommendations.";
 
@@ -62,19 +66,6 @@ function renderSelectedProducts() {
     .join("");
 }
 
-function getSelectedProductDetails() {
-  return allProducts.filter((product) => selectedProducts.includes(product.id));
-}
-
-function buildSelectedProductsText(selectedItems) {
-  return selectedItems
-    .map(
-      (product) =>
-        `- ${product.brand} | ${product.name} | ${product.category} | ${product.description}`,
-    )
-    .join("\n");
-}
-
 function showNoSelectedProductsMessage() {
   chatWindow.innerHTML =
     "Please select at least one product before generating a routine.";
@@ -109,6 +100,7 @@ async function requestRoutine(messages) {
 categoryFilter.addEventListener("change", async (e) => {
   const products = await loadProducts();
   allProducts = products;
+
   const selectedCategory = e.target.value;
 
   /* filter() creates a new array containing only products 
@@ -154,6 +146,14 @@ generateRoutineBtn.addEventListener("click", async () => {
     selectedProducts.includes(product.id),
   );
 
+  /* Save selected product context */
+  selectedProductContext = selectedItems.map((product) => ({
+    name: product.name,
+    brand: product.brand,
+    category: product.category,
+    description: product.description,
+  }));
+
   if (selectedItems.length === 0) {
     chatWindow.innerHTML =
       "Please select at least one product to generate routines.";
@@ -172,12 +172,7 @@ generateRoutineBtn.addEventListener("click", async () => {
       {
         role: "user",
         content: `Create a personalized routine using only these selected products. Use the JSON data below and do not recommend products outside of it:\n${JSON.stringify(
-          selectedItems.map((product) => ({
-            name: product.name,
-            brand: product.brand,
-            category: product.category,
-            description: product.description,
-          })),
+          selectedProductContext,
           null,
           2,
         )}`,
@@ -185,6 +180,7 @@ generateRoutineBtn.addEventListener("click", async () => {
     ];
 
     const routine = await requestRoutine(messages);
+    contextHistory = [{ role: "assistant", content: routine }];
     chatWindow.innerHTML = "";
 
     const routineMessage = document.createElement("div");
@@ -200,3 +196,68 @@ generateRoutineBtn.addEventListener("click", async () => {
   }
 });
 
+chatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const userInput = document.getElementById("userInput");
+  const question = userInput.value.trim();
+
+  if (!question) {
+    return;
+  }
+  /* Empty Input Check*/
+  if (selectedProductContext.length === 0 || contextHistory.length === 0) {
+    chatWindow.innerHTML = "No routine context found. Let's start a new topic!";
+    return;
+  }
+
+  userInput.value = "";
+
+  const userMessage = document.createElement("div");
+  userMessage.textContent = `You: ${question}`;
+  chatWindow.appendChild(userMessage);
+
+  const followUpMessages = [
+    {
+      role: "system",
+      content: routineSystemPromptParam,
+    },
+    {
+      role: "user",
+      // JSON changer
+      content: `Selected products JSON:\n${JSON.stringify(
+        selectedProductContext,
+        null,
+        2,
+      )}`,
+    },
+    ...contextHistory,
+    {
+      role: "user",
+      content: question,
+    },
+  ];
+
+  const waitingMessage = document.createElement("div");
+  waitingMessage.textContent = "waiting...";
+  chatWindow.appendChild(waitingMessage);
+
+  try {
+    const followUpAnswer = await requestRoutine(followUpMessages);
+    waitingMessage.remove();
+    contextHistory.push({ role: "user", content: question });
+    contextHistory.push({ role: "assistant", content: followUpAnswer });
+
+    const assistantMessage = document.createElement("div");
+    assistantMessage.style.whiteSpace = "pre-wrap";
+    assistantMessage.textContent = `Adviser: ${followUpAnswer}`;
+    chatWindow.appendChild(assistantMessage);
+  } catch (error) {
+    waitingMessage.remove();
+    const errorMessage = document.createElement("div");
+    errorMessage.textContent =
+      "Sorry, I could not answer that right now. Please try again later.";
+    chatWindow.appendChild(errorMessage);
+    console.error(error);
+  }
+});
