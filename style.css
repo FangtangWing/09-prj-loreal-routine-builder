@@ -9,6 +9,7 @@
 body {
   font-family: "Montserrat", Arial, Helvetica, sans-serif;
   color: #333;
+  background-color: #f7edd1;
   display: flex;
   justify-content: center;
 }

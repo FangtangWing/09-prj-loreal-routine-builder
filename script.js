@@ -268,7 +268,7 @@ chatForm.addEventListener("submit", async (e) => {
   }
   /* Empty Input Check*/
   if (selectedProductContext.length === 0 || contextHistory.length === 0) {
-    chatWindow.innerHTML = "No routine context found. Let's start a new topic!";
+    chatWindow.innerHTML = "No routine context found. Please generate a routine first.";
     return;
   }
 
