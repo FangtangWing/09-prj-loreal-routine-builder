@@ -237,10 +237,47 @@ body {
   margin-bottom: 20px;
 }
 
+.clear-selected-btn {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.clear-selected-btn:hover {
+  background: #f2f2f2;
+}
+
 #selectedProductsList {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+#selectedProductsList span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.remove-selected-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  line-height: 20px;
+  text-align: center;
+  font-size: 12px;
 }
 
 .generate-btn {

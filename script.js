@@ -5,10 +5,12 @@ const selectedProductsList = document.getElementById("selectedProductsList");
 const generateRoutineBtn = document.getElementById("generateRoutine");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
+const clearSelectedBtn = document.getElementById("clearSelected");
 
 const selectedProducts = [];
 let currentProducts = [];
 let allProducts = [];
+const selectedProductsStorageKey = "selectedProductIds";
 
 let selectedProductContext = [];
 let contextHistory = [];
@@ -16,6 +18,16 @@ const workerApiUrl = "https://chatbot-worker.3248613716.workers.dev";
 
 const routineSystemPromptParam =
   "You are a helpful beauty advisor. Create a clear personalized routine using only the selected products. You only answer questions about input products, routines, and recommendations.";
+
+const savedSelectedProducts = JSON.parse(
+  localStorage.getItem(selectedProductsStorageKey) || "[]",
+);
+
+if (Array.isArray(savedSelectedProducts)) {
+  selectedProducts.push(
+    ...savedSelectedProducts.filter((id) => Number.isInteger(id)),
+  );
+}
 
 selectedProductsList.innerHTML = "No products selected yet";
 
@@ -63,8 +75,18 @@ function renderSelectedProducts() {
   }
 
   selectedProductsList.innerHTML = selectedItems
-    .map((product) => `<span>${product.brand}: ${product.name}</span>`)
+    .map(
+      (product) =>
+        `<span>${product.brand}: ${product.name}<button type="button" class="remove-selected-btn" data-id="${product.id}" aria-label="Remove ${product.name}">x</button></span>`,
+    )
     .join("");
+}
+
+function saveSelectedProducts() {
+  localStorage.setItem(
+    selectedProductsStorageKey,
+    JSON.stringify(selectedProducts),
+  );
 }
 
 function showNoSelectedProductsMessage() {
@@ -146,6 +168,37 @@ productsContainer.addEventListener("click", (e) => {
     card.classList.add("selected");
   }
 
+  saveSelectedProducts();
+  renderSelectedProducts();
+});
+
+selectedProductsList.addEventListener("click", (e) => {
+  const removeButton = e.target.closest(".remove-selected-btn");
+
+  if (!removeButton) {
+    return;
+  }
+
+  const productId = Number(removeButton.dataset.id);
+  const selectedIndex = selectedProducts.indexOf(productId);
+
+  if (selectedIndex >= 0) {
+    selectedProducts.splice(selectedIndex, 1);
+    saveSelectedProducts();
+    renderSelectedProducts();
+    displayProducts(currentProducts);
+  }
+});
+
+clearSelectedBtn.addEventListener("click", () => {
+  selectedProducts.length = 0;
+  saveSelectedProducts();
+  renderSelectedProducts();
+  displayProducts(currentProducts);
+});
+
+loadProducts().then((products) => {
+  allProducts = products;
   renderSelectedProducts();
 });
 
