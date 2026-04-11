@@ -189,7 +189,7 @@ selectedProductsList.addEventListener("click", (e) => {
     displayProducts(currentProducts);
   }
 });
-
+// clear Items
 clearSelectedBtn.addEventListener("click", () => {
   selectedProducts.length = 0;
   saveSelectedProducts();
