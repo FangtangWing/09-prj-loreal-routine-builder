@@ -300,7 +300,7 @@ chatForm.addEventListener("submit", async (e) => {
   ];
 
   const waitingMessage = document.createElement("div");
-  waitingMessage.textContent = "waiting...";
+  waitingMessage.textContent = "just a moment...";
   chatWindow.appendChild(waitingMessage);
 
   try {
