@@ -17,7 +17,7 @@ let contextHistory = [];
 const workerApiUrl = "https://chatbot-worker.3248613716.workers.dev";
 
 const routineSystemPromptParam =
-  "You are a helpful beauty advisor. Create a clear personalized routine using only the selected products. You only answer questions about input products, routines, and recommendations.";
+  "You are a helpful L'Oréal beauty advisor. Create a clear personalized routine using only the selected products. You only answer questions about input products, routines, and recommendations.";
 
 const savedSelectedProducts = JSON.parse(
   localStorage.getItem(selectedProductsStorageKey) || "[]",
@@ -207,7 +207,7 @@ generateRoutineBtn.addEventListener("click", async () => {
     selectedProducts.includes(product.id),
   );
 
-  /* Save selected product context */
+  // Save selected product context
   selectedProductContext = selectedItems.map((product) => ({
     name: product.name,
     brand: product.brand,
