@@ -16,7 +16,7 @@ let selectedProductContext = [];
 let contextHistory = [];
 const workerApiUrl = "https://chatbot-worker.3248613716.workers.dev";
 
-const routineSystemPromptParam =
+const routineSystemPrompt =
   "You are a helpful L'Oréal beauty advisor. Create a clear personalized routine using only the selected products. You only answer questions about input products, routines, and recommendations.";
 
 const savedSelectedProducts = JSON.parse(
@@ -228,7 +228,7 @@ generateRoutineBtn.addEventListener("click", async () => {
     const messages = [
       {
         role: "system",
-        content: routineSystemPromptParam,
+        content: routineSystemPrompt,
       },
       {
         role: "user",
@@ -281,7 +281,7 @@ chatForm.addEventListener("submit", async (e) => {
   const followUpMessages = [
     {
       role: "system",
-      content: routineSystemPromptParam,
+      content: routineSystemPrompt,
     },
     {
       role: "user",
